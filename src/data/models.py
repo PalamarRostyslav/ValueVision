@@ -1,23 +1,22 @@
+"""
+Data models for the ValueVision project.
+
+This module contains the Item class and related data structures.
+"""
+
 from typing import Optional
 from transformers import AutoTokenizer
 import re
 
-BASE_MODEL = "meta-llama/Meta-Llama-3.1-8B"
+from config.settings import BASE_MODEL, MIN_TOKENS, MAX_TOKENS, MIN_CHARS, CEILING_CHARS
 
-MIN_TOKENS = 150
-MAX_TOKENS = 160
-
-MIN_CHARS = 300
-CEILING_CHARS = MAX_TOKENS * 7
 
 class Item:
     """
     An Item is a cleaned, curated datapoint of a Product with a Price
     """
     
-    # Class attributes (no heavy objects at class level for multiprocessing)
     _tokenizer = None
-    BASE_MODEL = "meta-llama/Meta-Llama-3.1-8B"
     PREFIX = "Price is $"
     QUESTION = "How much does this cost to the nearest dollar?"
     REMOVALS = ['"Batteries Included?": "No"', '"Batteries Included?": "Yes"', '"Batteries Required?": "No"', '"Batteries Required?": "Yes"', "By Manufacturer", "Item", "Date First", "Package", ":", "Number of", "Best Sellers", "Number", "Product "]
@@ -34,8 +33,7 @@ class Item:
     def get_tokenizer(cls):
         """Lazy loading of tokenizer to avoid issues in multiprocessing"""
         if cls._tokenizer is None:
-            from transformers import AutoTokenizer
-            cls._tokenizer = AutoTokenizer.from_pretrained(cls.BASE_MODEL, trust_remote_code=True)
+            cls._tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, trust_remote_code=True)
         return cls._tokenizer
 
     @property
@@ -46,6 +44,7 @@ class Item:
     def __init__(self, data, price):
         self.title = data['title']
         self.price = price
+        self.category = ""
         self.parse(data)
 
     def scrub_details(self):
@@ -73,15 +72,10 @@ class Item:
         Parse this datapoint and if it fits within the allowed Token range,
         then set include to True
         """
-        contents = '\n'.join(data['description'])
-        if contents:
-            contents += '\n'
-        features = '\n'.join(data['features'])
-        if features:
-            contents += features + '\n'
-        self.details = data['details']
-        if self.details:
-            contents += self.scrub_details() + '\n'
+        content_fields = ["description", "features", "details"]
+        contents = " ".join([str(data.get(field, "")) for field in content_fields])
+        self.details = contents
+        
         if len(contents) > MIN_CHARS:
             contents = contents[:CEILING_CHARS]
             text = f"{self.scrub(self.title)}\n{self.scrub(contents)}"

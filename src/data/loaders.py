@@ -1,20 +1,21 @@
+"""
+Data loading utilities for the ValueVision project.
+
+This module contains the ItemLoader class and related data loading functions.
+"""
+
 from datetime import datetime
 from tqdm import tqdm
 from datasets import load_dataset
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 import multiprocessing
+
+from config.settings import CHUNK_SIZE, MIN_PRICE, MAX_PRICE, HF_DATASET_NAME
+from src.data.models import Item
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
 
-try:
-    from items import Item
-except ImportError:
-    Item = None
-
-CHUNK_SIZE = 1000
-MIN_PRICE = 0.5
-MAX_PRICE = 999.49
 
 def process_datapoint(datapoint):
     """
@@ -30,7 +31,6 @@ def process_datapoint(datapoint):
                     item = Item(datapoint, price)
                     return item if item.include else None
                 else:
-                    # Fallback if Item class is not available
                     return datapoint
     except (ValueError, KeyError):
         return None
@@ -48,8 +48,22 @@ def process_chunk(chunk):
             batch.append(result)
     return batch
 
+
 class ItemLoader:
+    """
+    Loads and processes Amazon product data from HuggingFace datasets.
+    
+    This class handles downloading datasets, processing them in parallel,
+    and converting raw data into Item objects.
+    """
+    
     def __init__(self, name):
+        """
+        Initialize the ItemLoader with a dataset name.
+        
+        Args:
+            name: The name of the Amazon product category to load
+        """
         self.name = name
         self.dataset = None
 
@@ -106,10 +120,16 @@ class ItemLoader:
         """
         Load in this dataset; the workers parameter specifies how many processes
         should work on loading and scrubbing the data
+        
+        Args:
+            workers: Number of parallel workers to use for processing
+            
+        Returns:
+            List of processed Item objects
         """
         start = datetime.now()
         print(f"Loading dataset {self.name}", flush=True)
-        self.dataset = load_dataset("McAuley-Lab/Amazon-Reviews-2023", f"raw_meta_{self.name}", split="full", trust_remote_code=True)
+        self.dataset = load_dataset(HF_DATASET_NAME, f"raw_meta_{self.name}", split="full", trust_remote_code=True)
         results = self.load_in_parallel(workers)
         finish = datetime.now()
         print(f"Completed {self.name} with {len(results):,} datapoints in {(finish-start).total_seconds()/60:.1f} mins", flush=True)

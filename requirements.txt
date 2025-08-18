@@ -1,0 +1,20 @@
+# Core data processing
+datasets
+transformers
+torch
+numpy
+pandas
+
+# Visualization
+matplotlib
+seaborn
+
+# Utilities
+python-dotenv
+huggingface_hub
+tqdm
+
+# Development
+pytest
+black
+flake8

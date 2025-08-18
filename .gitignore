@@ -6,6 +6,14 @@ __pycache__/
 # C extensions
 *.so
 
+# Pickle files
+*.pkl
+*.pickle
+
+# Test datasets folders
+output/*
+!output/.gitkeep 
+
 # Distribution / packaging
 .Python
 build/
