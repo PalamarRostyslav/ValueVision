@@ -155,3 +155,36 @@ class DataVisualizer:
         """Create visualizations for test subset."""
         print("=== TEST SUBSET: First 250 Test Items ===")
         self.distribution_of_prices(items)
+    
+    def create_prediction_scatter_plot(self, truths: List[float], predictions: List[float], 
+            colors: List[str], title: str) -> None:
+        """
+        Create scatter plot comparing predictions to ground truth.
+        
+        Args:
+            truths: Ground truth values
+            predictions: Model predictions
+            colors: Color for each point (as color names)
+            title: Title for the plot
+        """
+        if not truths or not predictions:
+            return
+        
+        plt.figure(figsize=(12, 8))
+        
+        max_val = max(max(truths), max(predictions))
+        
+        # Perfect prediction line
+        plt.plot([0, max_val], [0, max_val], color='deepskyblue', lw=2, alpha=0.6, label='Perfect Prediction')
+        
+        # Scatter plot of predictions
+        plt.scatter(truths, predictions, s=3, c=colors, alpha=0.7)
+        
+        plt.xlabel('Ground Truth ($)')
+        plt.ylabel('Model Estimate ($)')
+        plt.xlim(0, max_val)
+        plt.ylim(0, max_val)
+        plt.title(title)
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        plt.show()

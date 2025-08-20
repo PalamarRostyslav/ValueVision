@@ -21,16 +21,22 @@ def main():
         print("""
 ValueVision CLI Helper
 
-Usage:
+Data Processing:
     python cli.py full                # Full pipeline from scratch
     python cli.py quick               # Use existing data if available
     python cli.py analyze             # Quick analysis only
     python cli.py reload              # Force reload existing data
     python cli.py specific DATASETS   # Process specific datasets (e.g., Electronics Appliances)
 
+Testing & Optimization:
+    python cli.py test                # Run model testing
+    python cli.py tune                # Run fine-tuning optimization
+
 Examples:
     python cli.py quick               # Fast mode - uses existing data
     python cli.py analyze             # Just show analysis of existing data
+    python cli.py test                # Test models on existing data
+    python cli.py tune                # Run fine-tuning optimization
     python cli.py specific Electronics Automotive  # Process only these datasets
         """)
         return
@@ -55,6 +61,12 @@ Examples:
             return
         datasets = " ".join(sys.argv[2:])
         run_command(f"python main.py --datasets {datasets}")
+    
+    elif mode == "test":
+        run_command("python main.py --test")
+    
+    elif mode == "tune":
+        run_command("python main.py --fine-tune")
     
     else:
         print(f"Unknown mode: {mode}")
