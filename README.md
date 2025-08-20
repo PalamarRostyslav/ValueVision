@@ -409,6 +409,8 @@ Raw Amazon Data → Loading → Validation → Sampling → Splitting → Export
 - **Advantages**: State-of-the-art accuracy, handles complex product descriptions
 - **Use Case**: Production-grade price prediction with natural language understanding
 - **Cost**: ~$1-5 per training job (with smart reuse system)
+- 
+<img width="1197" height="861" alt="Pasted image 20250820203345" src="https://github.com/user-attachments/assets/47934cd4-4c9d-4eb2-b9d6-6b9fb0abf1c9" />
 
 ### 2. 🌲 **Random Forest + Word2Vec**
 
@@ -417,12 +419,17 @@ Raw Amazon Data → Loading → Validation → Sampling → Splitting → Export
 - **Use Case**: Quick prototyping and feature importance analysis
 - **Cost**: Free, uses local computation
 
+<img width="1197" height="859" alt="Pasted image 20250820190405" src="https://github.com/user-attachments/assets/a69c7832-0dc9-4606-a155-aa639ba4dbc8" />
+
+
 ### 3. ⚙️ **Feature-Based ML**
 
 - **Technology**: Traditional ML with engineered features
 - **Advantages**: Highly interpretable, fast inference, low resource usage
 - **Use Case**: Scenarios requiring model explainability
 - **Cost**: Free, minimal computational requirements
+- 
+<img width="1199" height="860" alt="Pasted image 20250820183635" src="https://github.com/user-attachments/assets/defffa4a-39d4-464c-b05d-f63cfc97f888" />
 
 ### 4. 🎲 **Random Seed Optimization**
 
@@ -430,6 +437,8 @@ Raw Amazon Data → Loading → Validation → Sampling → Splitting → Export
 - **Advantages**: Improves any model's performance, no additional complexity
 - **Use Case**: Maximizing performance of existing models
 - **Cost**: Free, automated optimization
+- 
+<img width="1199" height="864" alt="Pasted image 20250820183656" src="https://github.com/user-attachments/assets/8812ab10-ef56-481c-b950-820462f9aa27" />
 
 ### Performance Comparison
 
@@ -445,5 +454,6 @@ Raw Amazon Data → Loading → Validation → Sampling → Splitting → Export
 - **💾 Use `--use-existing`** for faster iterations during development
 - **🎯 Start with smaller datasets** to validate workflows
 - **⚡ Use specific model IDs** for production to avoid retraining
+
 
 
