@@ -16,7 +16,9 @@ Usage:
     python main.py --analysis-only        # Only run analysis on existing data
     python main.py --force-reload         # Force reload even with --use-existing
     python main.py --test                 # Run model testing on existing data
-    python main.py --fine-tune            # Run fine-tuning optimization
+    python main.py --fine-tune random-seed   # Run random seed fine-tuning
+    python main.py --fine-tune feature-based # Run feature-based fine-tuning
+    python main.py --fine-tune random-forest # Run Random Forest with Word2Vec fine-tuning
 """
 
 import logging
@@ -24,7 +26,9 @@ import sys
 import os
 import argparse
 import pickle
-from src.testing.fine_tuning import FineTuningRandomSeed
+from src.testing.strategies.random_seed import FineTuningRandomSeed
+from src.testing.strategies.feature_based import FineTuningWithFeatures
+from src.testing.strategies.random_forest import FineTuningRandomForest
 from src.testing.tester import ModelTester
 from src.data.pipeline import DataPipeline
 
@@ -84,8 +88,8 @@ def parse_arguments():
     
     parser.add_argument(
         '--fine-tune',
-        action='store_true',
-        help='Run fine-tuning optimization (random seed optimization)'
+        choices=['random-seed', 'feature-based', 'random-forest'],
+        help='Run fine-tuning optimization with specified strategy'
     )
     
     parser.add_argument(
@@ -138,9 +142,18 @@ def run_fine_tuning_mode(args):
         sys.exit(1)
     
     # Run fine-tuning with proper training/validation split
-    optimizer = FineTuningRandomSeed(iterations=15)
+    if args.fine_tune == 'random-seed':
+        optimizer = FineTuningRandomSeed(iterations=15)
+    elif args.fine_tune == 'feature-based':
+        optimizer = FineTuningWithFeatures()
+    elif args.fine_tune == 'random-forest':
+        optimizer = FineTuningRandomForest()
+    else:
+        logger.error("Unknown fine-tuning strategy")
+        return
+    
     optimized_predictor = optimizer.optimize_predictor(
-        train_data[:500],
+        train_data[:700],
         test_data[:200]
     )
     

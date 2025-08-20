@@ -6,13 +6,15 @@ including comprehensive model testing, fine-tuning strategies, and optimization 
 """
 
 from .tester import ModelTester
-from .fine_tuning import (
-    FineTuning, 
-    FineTuningRandomSeed
-)
+from .fine_tuning import FineTuning
+from .strategies.random_seed import FineTuningRandomSeed
+from .strategies.feature_based import FineTuningWithFeatures
+from .strategies.random_forest import FineTuningRandomForest
 
 __all__ = [
     'ModelTester',
     'FineTuning',
-    'FineTuningRandomSeed'
+    'FineTuningRandomSeed',
+    'FineTuningWithFeatures',
+    'FineTuningRandomForest'
 ]

@@ -59,9 +59,20 @@ class ModelTester:
         # Add optimization info if available
         if hasattr(self.predictor, 'optimization_info'):
             opt_info = self.predictor.optimization_info
-            title += f"\nOptimized: Seed={opt_info['best_seed']} | Train Error=${opt_info['training_error']:.2f}"
-            if opt_info['validation_error']:
-                title += f" | Val Error=${opt_info['validation_error']:.2f}"
+            strategy = opt_info.get('strategy', 'Unknown')
+            title += f"\nOptimized: {strategy}"
+            
+            # Different strategies have different metrics
+            if 'best_seed' in opt_info:
+                title += f" | Seed={opt_info['best_seed']}"
+                if 'training_error' in opt_info:
+                    title += f" | Train Error=${opt_info['training_error']:.2f}"
+                if opt_info.get('validation_error'):
+                    title += f" | Val Error=${opt_info['validation_error']:.2f}"
+            elif 'training_r2' in opt_info:
+                title += f" | Train R²={opt_info['training_r2']:.3f}"
+                if opt_info.get('validation_r2'):
+                    title += f" | Val R²={opt_info['validation_r2']:.3f}"
         
         self.chart(title)
 
