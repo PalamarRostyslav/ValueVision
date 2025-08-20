@@ -19,6 +19,7 @@ Usage:
     python main.py --fine-tune random-seed   # Run random seed fine-tuning
     python main.py --fine-tune feature-based # Run feature-based fine-tuning
     python main.py --fine-tune random-forest # Run Random Forest with Word2Vec fine-tuning
+    python main.py --fine-tune openai        # Run OpenAI GPT fine-tuning
 """
 
 import logging
@@ -29,8 +30,10 @@ import pickle
 from src.testing.strategies.random_seed import FineTuningRandomSeed
 from src.testing.strategies.feature_based import FineTuningWithFeatures
 from src.testing.strategies.random_forest import FineTuningRandomForest
+from src.testing.strategies.openai_strategy import FineTuningOpenAI
 from src.testing.tester import ModelTester
 from src.data.pipeline import DataPipeline
+from src.ai_models.model_manager import ModelManager
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -48,11 +51,15 @@ def parse_arguments():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
         Examples:
-            python main.py                         # Full pipeline from scratch
-            python main.py --use-existing          # Use existing data if available
-            python main.py --analysis-only        # Quick analysis of existing data
-            python main.py --test                 # Test models on existing data
-            python main.py --fine-tune            # Run fine-tuning optimization
+            python main.py                              # Full pipeline from scratch
+            python main.py --use-existing               # Use existing data if available
+            python main.py --analysis-only             # Quick analysis of existing data
+            python main.py --test                      # Test models on existing data
+            python main.py --fine-tune openai          # Fine-tune with OpenAI (reuses existing models)
+            python main.py --fine-tune openai --force-new-model  # Force new model training
+            python main.py --fine-tune openai --model-id ft:gpt-4o-mini:example  # Use specific model
+            python main.py --list-models               # List all saved models
+            python main.py --cleanup-models 30         # Clean up models older than 30 days
                 """
         )
     
@@ -88,8 +95,33 @@ def parse_arguments():
     
     parser.add_argument(
         '--fine-tune',
-        choices=['random-seed', 'feature-based', 'random-forest'],
+        choices=['random-seed', 'feature-based', 'random-forest', 'openai'],
         help='Run fine-tuning optimization with specified strategy'
+    )
+    
+    parser.add_argument(
+        '--model-id',
+        type=str,
+        help='Use specific fine-tuned model ID (for OpenAI fine-tuning)'
+    )
+    
+    parser.add_argument(
+        '--force-new-model',
+        action='store_true',
+        help='Force training new model even if existing model found'
+    )
+    
+    parser.add_argument(
+        '--list-models',
+        action='store_true',
+        help='List all saved fine-tuned models'
+    )
+    
+    parser.add_argument(
+        '--cleanup-models',
+        type=int,
+        metavar='DAYS',
+        help='Clean up models older than specified days (keeps latest 3 per provider)'
     )
     
     parser.add_argument(
@@ -127,6 +159,28 @@ def run_testing_mode(args):
     tester.run()
 
 
+def run_model_management(args):
+    """Run model management commands."""
+    model_manager = ModelManager()
+    
+    if args.list_models:
+        print("\n" + "="*60)
+        print("FINE-TUNED MODELS REGISTRY")
+        print("="*60)
+        model_manager.print_models_summary()
+        return
+    
+    if args.cleanup_models:
+        days = args.cleanup_models
+        print(f"\nCleaning up models older than {days} days...")
+        deleted_count = model_manager.cleanup_old_models(days=days)
+        if deleted_count > 0:
+            print(f"✓ Cleaned up {deleted_count} old models")
+        else:
+            print("No old models to clean up")
+        return
+
+
 def run_fine_tuning_mode(args):
     """Run fine-tuning optimization mode."""
     
@@ -148,6 +202,13 @@ def run_fine_tuning_mode(args):
         optimizer = FineTuningWithFeatures()
     elif args.fine_tune == 'random-forest':
         optimizer = FineTuningRandomForest()
+    elif args.fine_tune == 'openai':
+        # Create OpenAI strategy with new options
+        use_existing = not args.force_new_model
+        optimizer = FineTuningOpenAI(
+            use_existing=use_existing,
+            model_id=args.model_id
+        )
     else:
         logger.error("Unknown fine-tuning strategy")
         return
@@ -168,6 +229,11 @@ def main():
     """Main function to run the complete data processing pipeline."""
     try:
         args = parse_arguments()
+        
+        # Handle model management commands first
+        if args.list_models or args.cleanup_models:
+            run_model_management(args)
+            return
         
         # Handle fine-tuning mode
         if args.fine_tune:

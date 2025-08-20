@@ -4,6 +4,10 @@ Configuration settings for the ValueVision project.
 
 import os
 from typing import List
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Dataset configuration
 DATASET_NAMES: List[str] = [
@@ -19,6 +23,10 @@ DATASET_NAMES: List[str] = [
 
 # Model configuration
 BASE_MODEL = "meta-llama/Meta-Llama-3.1-8B"
+
+# OpenAI Fine-tuning configuration
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = "gpt-4o-mini-2024-07-18"
 
 # Item processing configuration
 MIN_TOKENS = 150
